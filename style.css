@@ -1,0 +1,49 @@
+html, body, div, span, form, label,
+table, tbody, thead, tr, th, td,
+article, footer, header, menu, nav, section,
+{
+    margin: 0;
+    padding: 0;
+    border: 0;
+  	font-size: 100%;
+    vertical-align: baseline;
+}
+
+/* HTML5 display-role reset for older browsers */
+article, footer, header, menu, nav, section {
+    display: block;
+}
+
+body {
+    background-color: #eee;
+    line-height: 1;
+}
+
+.ball{
+    display: block;
+    width: 42px;
+    height: 42px;
+    border: 2px solid #3a9590;
+    background-color: #8be3d5;
+    border-radius: 50%;
+}
+
+.ball:before{
+    content: "";
+    position: absolute;
+    display: block;
+    top: 15%;
+    left: 25%;
+    width: 25%;
+    height: 25%;
+    border-radius: 50%;
+    background-color: #9bf3e5;
+    z-index: 99;
+}
+
+.game-field{
+    display: block;
+    border: 3px solid #745751;
+    border-radius: 4px;
+    background-color: #fff;
+}
