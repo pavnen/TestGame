@@ -17,7 +17,6 @@
 
         // параметры перетаскиваемого шарика
         this.draggedBall = {};
-
         //subscribe item prototype
         this.subscribeItemPrototype = {id: null, subscriber: undefined, callback: undefined, eventsList: []};
         // array of subscribe items
@@ -237,7 +236,6 @@
         d.style.height = this.height + "px";
         this.elementDOM = d;
         this.parent.appendChild(d);
-        console.log(d);
 
         return this;
     }
@@ -321,7 +319,26 @@
         }
     }
 
+    /// сохраняем массив с шариками в localStorage
+    gameField.prototype.exportBalls = function(name){
+        localStorage[name] = JSON.stringify(this.ballsArray);
+        return this;
+    }
 
+    /// забираем массив с шариками из localStorage и отрисовываем их
+    gameField.prototype.importBalls = function(name){
+        var loadedBalls = JSON.parse(localStorage[name]);
+        var this_ = this;
+        loadedBalls.forEach(
+          function(loadedBall){
+              var ball = new gameBall(this_.parent, loadedBall.domID);
+              ball.isShown = false;
+              this_.addBall(ball, {x:(loadedBall.pos.x-this_.position.x), y:(loadedBall.pos.y-this_.position.y)});
+              //ball.addToField(this_,loadedBall.pos);
+          }
+        );
+        return this;
+    }
 
     gameField.prototype.initDragNDrop = function (dispatcher, subscribeCallback) {
         //subscribeCallback.call(dispatcher, this.domID, this, this.getBallFromId, ["down"]);
@@ -399,7 +416,6 @@
         gameField.prototype.addBall.apply(this, arguments);
     }
 
-
     /// Начальная установка шариков на первом поле
     function generateBalls() {
         var num = 12;
@@ -408,24 +424,36 @@
             var ball = new gameBall(body, "ball_" + i.toString()).initDragNDrop(globalDispatcher, globalDispatcher.subscribe);
             ball.addToField(gameField1, {x: ((i < 9) ? (i * 44) : (i * 44 - 8 * 44)) + 4, y: (i < 9) ? 10 : 60 });
         }
-
-        var globalBallDispatcher = new ballDispatcher([gameField1, gameField2]).initDragNDrop(globalDispatcher, globalDispatcher.subscribe);
-
-        console.log(localStorage["ballsInField1"]);
-
-        window.onbeforeunload = function () {
-            localStorage["ballsInField1"] = JSON.stringify(gameField1.ballsArray)
-        };
-
-        gameField2.startTimer();
-
     }
 
     var body = document.body;
     var globalDispatcher = new eventDispatcher();
     var gameField1 = new gameField(body, "GF1").showAt({x: 40, y: 40});
     var gameField2 = new liveGameField(body, "GF2").showAt({x: 640, y: 40});
-    generateBalls();
+
+    if (localStorage["field1"] !== undefined && localStorage["field2"] !== undefined) {
+        gameField1.importBalls("field1");
+        gameField1.ballsArray.forEach(function(ball){
+            ball.initDragNDrop(globalDispatcher, globalDispatcher.subscribe)
+        });
+
+        gameField2.importBalls("field2");
+        gameField2.ballsArray.forEach(function(ball){
+            ball.initDragNDrop(globalDispatcher, globalDispatcher.subscribe)
+        });
+    }
+    else
+       generateBalls();
+
+    var globalBallDispatcher = new ballDispatcher([gameField1, gameField2]).initDragNDrop(globalDispatcher, globalDispatcher.subscribe);
+    gameField2.startTimer();
+
     gameField1.initDragNDrop(globalDispatcher, globalDispatcher.subscribe);
+    gameField2.initDragNDrop(globalDispatcher, globalDispatcher.subscribe);
+
+    window.onbeforeunload = function(){
+        gameField2.exportBalls("field2");
+        gameField1.exportBalls("field1");
+    }
 
 }())
